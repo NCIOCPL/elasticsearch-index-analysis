@@ -1,0 +1,48 @@
+#!/usr/bin/env node
+'use strict';
+
+var program  = require('commander');
+
+require('autocmdr/lib/logger')(program);
+// Commenting out loader since it tries to load .svn folder and dies
+//require('autocmdr/lib/loader')(program);
+require('autocmdr/lib/package')(program);
+require('autocmdr/lib/config')(program);
+require('autocmdr/lib/help')(program);
+
+// Load Commands because loader is not configured.
+require('../cmds/dumpindextoexcel.js')(program)
+
+
+
+program
+	//Common options to ALL commands.
+	.option(
+		'-s --server <server>', 
+		'The elasticsearch node IP or Name to connect to. (default: localhost)', 
+		'localhost'
+	)
+	.option(
+		'-p --port <port>', 
+		'The elasticsearch node port to connect to. (default: 9200)', 
+		function(val, def) {
+
+			var parsed = parseInt(val);
+
+			if (isNaN(parsed)) {
+				console.log("The port must be a valid number");	
+				process.exit(100);
+			}
+
+			return parsed;
+		},
+		9200
+	)		
+	.option('-v --verbose', 'Should the output be verbose or not (default: false)')	
+	.parse(process.argv);
+
+if (program.args.length < 1 ) {
+	console.log('No command specified. See \'indexanalysis --help\':');
+	program.outputHelp();
+	process.exit(1);
+}
